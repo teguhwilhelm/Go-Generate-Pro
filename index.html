@@ -437,7 +437,7 @@
             let matchNIK = line.match(/\d{16}/);
             if (matchNIK) { nik = matchNIK[0]; } 
 
-            let matchKPJ = line.match(/\d{11}/);
+            let matchKPJ = line.match(/[A-Z0-9]{11}/);
             if (matchKPJ) { 
                 kpj = matchKPJ[0]; 
                 if (nama === "-") {
