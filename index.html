@@ -229,16 +229,58 @@
         .time-ago { font-size: 9px; color: #888; }
         .select-mode-check { display: none; margin-right: 10px; width: 16px; height: 16px; accent-color: var(--neon-cyan); }
         .history-item.selecting .select-mode-check { display: inline-block; }
-        #exitModal {
+        #exitContainer {
+    max-width: 250px;
+    text-align: center; 
+    border: 2px solid var(--neon-cyan); 
+    background: rgba(15, 23, 42, 0.98);
+    border-radius: 20px;
+    padding: 25px; 
+    width: 200px;
+    box-shadow: 0 0 15px var(--neon-cyan), inset 0 0 10px rgba(76, 201, 240, 0.2);
+    animation: neonPulseDash 3s infinite ease-in-out;
+}
+@keyframes neonPulseDash {
+    0% { box-shadow: 0 0 8px var(--neon-cyan); border-color: var(--neon-cyan); }
+    50% { box-shadow: 0 0 20px var(--accent-1); border-color: var(--accent-1); }
+    100% { box-shadow: 0 0 8px var(--neon-cyan); border-color: var(--neon-cyan); }
+}
+.btn-exit-small {
+    flex: 1;
+    padding: 8px 5px;
+    font-size: 11px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    transition: 0.3s;
+    color: white;
+}
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+.btn-clear-input {
     display: none; 
-    position: fixed; 
-    inset: 0; 
-    background: rgba(0, 0, 0, 0.8); 
-    backdrop-filter: blur(8px); 
-    z-index: 9999; 
-    align-items: center; 
-    justify-content: center;
-    padding: 20px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--neon-cyan);
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease; 
+    font-family: 'Orbitron', sans-serif;
+    z-index: 10;
+}
+.btn-clear-input:active {
+    transform: scale(0.9);
+    background: rgba(255, 255, 255, 0.1);
 }
     </style>
 </head>
@@ -275,7 +317,10 @@
             <span>Label :</span>
             <input type="text" id="noTG" placeholder="Judul/Kode">
         </div>
-        <textarea id="inputData" placeholder="Feed Raw Data Here..." oninput="handleInput(this)"></textarea>
+        <div class="input-wrapper">
+    <button class="btn-clear-input" id="btnClear" onclick="clearInput()">Clear</button>
+    <textarea id="inputData" placeholder="Feed Raw Data Here..." oninput="handleInput(this)"></textarea>
+</div>
         <button id="genBtn" class="btn-gen" onclick="generate()">Generate ✨</button>
         <div class="output-container">
             <div class="label-row">
@@ -380,13 +425,31 @@
     let rawCache = { tg: "", nama: "-", nik: "-" };
     let selectedNIKs = []; 
     let pressTimer;
+    
     function handleInput(el) {
-        el.style.height = "auto"; el.style.height = (el.scrollHeight) + "px";
-        if (el.value.trim() === "") {
-            document.getElementById('out1').innerText = ""; document.getElementById('out2').innerText = "";
-            rawCache = { tg: "", nama: "-", nik: "-" };
-        }
+    el.style.height = "auto"; 
+    el.style.height = (el.scrollHeight) + "px";
+    
+    const btnClear = document.getElementById('btnClear');
+    if (el.value.trim().length > 0) {
+        btnClear.style.display = 'block';
+    } else {
+        btnClear.style.display = 'none';
+        document.getElementById('out1').innerText = ""; 
+        document.getElementById('out2').innerText = "";
+        rawCache = { tg: "", nama: "-", nik: "-" };
     }
+}
+function clearInput() {
+    const inputEl = document.getElementById('inputData');
+    const btnClear = document.getElementById('btnClear');
+    inputEl.value = "";
+    inputEl.style.height = "auto"; 
+    document.getElementById('out1').innerText = "";
+    document.getElementById('out2').innerText = "";
+    rawCache = { tg: "", nama: "-", nik: "-" };
+    btnClear.style.display = 'none';
+}
     function formatTitik(val) {
         if(!val) return "0";
         let num = val.toString().replace(/\D/g, "");
@@ -573,6 +636,11 @@
 function showExitModal() {
     document.getElementById('exitModal').style.display = 'flex';
 }
+function showExitModal() {
+    document.getElementById('exitModal').style.display = 'flex';
+    if (navigator.vibrate) navigator.vibrate(100); 
+}
+
 function confirmExit(isExiting) {
     if (isExiting) {
         window.location.href = "about:blank";
@@ -583,17 +651,20 @@ function confirmExit(isExiting) {
 }
 window.addEventListener('load', function() {
     history.pushState(null, document.title, location.href);
-    window.addEventListener('popstate', function (event) {
+    window.addEventListener('popstate', function () {
         showExitModal();
+        history.pushState(null, document.title, location.href);
     });
 });
 </script>
-<div id="exitModal">
-    <div class="container" style="max-width: 320px; text-align: center; border: 1px solid var(--neon-cyan); box-shadow: 0 0 20px rgba(76, 201, 240, 0.2);">
-        <h3 style="font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); font-size: 14px; margin-bottom: 25px; letter-spacing: 1px;">INGIN KELUAR DARI GO-GEN?</h3>
-        <div style="display: flex; gap: 15px;">
-            <button class="auth-btn" style="background: linear-gradient(45deg, #25D366, #128C7E); flex: 1;" onclick="confirmExit(true)">YES</button>
-            <button class="auth-btn" style="background: linear-gradient(45deg, #ff4757, #ff6b81); flex: 1;" onclick="confirmExit(false)">NO</button>
+<div id="exitModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center;">
+    <div id="exitContainer">
+        <div style="font-size: 30px; margin-bottom: 10px; filter: drop-shadow(0 0 5px var(--neon-cyan));">⚠</div>
+        <h3 style="font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); font-size: 13px; margin-bottom: 15px; letter-spacing: 1px; text-shadow: 0 0 8px var(--neon-cyan);">Exit Go-Gen?</h3>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn-exit-small" style="background: linear-gradient(45deg, var(--accent-2), var(--accent-1));" onclick="confirmExit(true)">Yes</button>
+            <button class="btn-exit-small" style="background: #2f3542; border: 1px solid var(--neon-cyan); color: var(--neon-cyan);" onclick="confirmExit(false)">No</button>
         </div>
     </div>
 </div>
